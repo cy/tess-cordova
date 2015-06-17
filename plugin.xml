@@ -34,10 +34,11 @@
 			</feature>
 		</config-file>
 		<source-file src="src/android/TessCordova.java" target-dir="src/com/tesscordova"/>
-    <source-file src="src/android/bin/classes.jar" target-dir="src/com/tesscordova" />
-    <source-file src="src/android/bin" target-dir="src/com/tesscordova" />
-    <source-file src="src/android/libs" target-dir="src/com/tesscordova" />
-    <source-file src="src/android/jni" target-dir="src/com/tesscordova" />
+    <source-file src="src/android/com/googlecode/tesseract/android" target-dir="src/com/googlecode/tesseract/android" />
+    <source-file src="src/android/com/googlecode/leptonica/android" target-dir="src/com/googlecode/leptonica/android" />
+    <source-file src="src/android/jni" target-dir="libs" />
+    <source-file src="src/android/libs" target-dir="libs" />
+    <source-file src="src/android/bin" target-dir="libs" />
 	</platform>
 
   </plugin>
