@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.googlecode.tesseract.android.TessBaseAPI;
 
 public class TessCordova extends CordovaPlugin {
 
@@ -22,7 +23,11 @@ public class TessCordova extends CordovaPlugin {
             String message = args.getString(0);
             this.coolMethod(message, callbackContext);
             return true;
+        } else if ("tessOCR".equals(action)) {
+            TessBaseAPI baseApi = new TessBaseAPI();
+            return true;
         }
+
         return false;
     }
 
