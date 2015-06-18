@@ -1,30 +1,22 @@
-function ActionSheet() {
+function TessCordova() {
 }
 
-ActionSheet.prototype.show = function (options, successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "ActionSheet", "show", [options]);
+TessCordova.prototype.coolMethod = function (options, successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "TessCordova", "coolMethod", [arg0]);
 };
 
-ActionSheet.prototype.hide = function (options, successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "ActionSheet", "hide", [options]);
+TessCordova.prototype.tessOCR = function (options, successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "TessCordova", "tessOCR", [arg0]);
 };
 
-ActionSheet.prototype.ANDROID_THEMES = {
-  THEME_TRADITIONAL          : 1, // default
-  THEME_HOLO_DARK            : 2,
-  THEME_HOLO_LIGHT           : 3,
-  THEME_DEVICE_DEFAULT_DARK  : 4,
-  THEME_DEVICE_DEFAULT_LIGHT : 5
-};
-
-ActionSheet.install = function () {
+TessCordova.install = function () {
   if (!window.plugins) {
     window.plugins = {};
   }
 
-  window.plugins.actionsheet = new ActionSheet();
+  window.plugins.tesscordova = new TessCordova();
 
-  return window.plugins.actionsheet;
+  return window.plugins.tesscordova;
 };
 
-cordova.addConstructor(ActionSheet.install);
+cordova.addConstructor(TessCordova.install);
