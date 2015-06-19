@@ -2,11 +2,11 @@ function TessCordova() {
 }
 
 TessCordova.prototype.coolMethod = function (options, successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "TessCordova", "coolMethod", [arg0]);
+  cordova.exec(successCallback, errorCallback, "TessCordova", "coolMethod", [options]);
 };
 
 TessCordova.prototype.tessOCR = function (options, successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "TessCordova", "tessOCR", [arg0]);
+  cordova.exec(successCallback, errorCallback, "TessCordova", "tessOCR", [options]);
 };
 
 TessCordova.install = function () {
