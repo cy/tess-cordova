@@ -33,6 +33,12 @@
 				<param name="android-package" value="com.tesscordova.TessCordova"/>
 			</feature>
 		</config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    </config-file>
+
 		<source-file src="src/android/TessCordova.java" target-dir="src/com/tesscordova"/>
     <source-file src="src/android/com/googlecode/tesseract/android" target-dir="src/com/googlecode/tesseract/android" />
     <source-file src="src/android/com/googlecode/leptonica/android" target-dir="src/com/googlecode/leptonica/android" />
