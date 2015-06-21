@@ -14,21 +14,22 @@ import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 import android.media.ExifInterface;
 import android.graphics.Matrix;
+import android.os.Environment;
 
 import java.io.IOException;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 public class TessCordova extends CordovaPlugin {
-    static final String IMAGE_PATH = "file:///android_asset/receipt.jpg";
+    public static final String IMAGE_PATH = Environment.getExternalStorageDirectory().toString() + "/temp/receipt.jpg";
     static final String LOG_TAG = "com.tesscordova";
+    public static final String DATA_PATH = Environment.getExternalStorageDirectory().toString() + "/temp/";
 
     public TessCordova() {
         super();
     }
 
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-
         if ("coolMethod".equals(action)) {
             String message = args.getString(0);
             this.coolMethod(message, callbackContext);
@@ -38,43 +39,48 @@ public class TessCordova extends CordovaPlugin {
              options.inSampleSize = 2;
              Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_PATH, options);
 
-        try {
-            ExifInterface exif = new ExifInterface(IMAGE_PATH);
-            int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-            Log.v(LOG_TAG, "Orient: " + exifOrientation);
-            int rotate = 0;
-            switch (exifOrientation) {
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    rotate = 90;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    rotate = 180;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    rotate = 270;
-                    break;
+            try {
+                ExifInterface exif = new ExifInterface(IMAGE_PATH);
+                int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                Log.v(LOG_TAG, "Orient: " + exifOrientation);
+                int rotate = 0;
+                switch (exifOrientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        rotate = 90;
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        rotate = 180;
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        rotate = 270;
+                        break;
+                }
+                Log.v(LOG_TAG, "Rotation: " + rotate);
+                if (rotate != 0) {
+                    // Getting width & height of the given image.
+                    int w = bitmap.getWidth();
+                    int h = bitmap.getHeight();
+                    // Setting pre rotate
+                    Matrix mtx = new Matrix();
+                    mtx.preRotate(rotate);
+                    // Rotating Bitmap
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
+                    // tesseract req. ARGB_8888
+                    bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                }
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Rotate or coversion failed: " + e.toString());
+                callbackContext.error("Rotate or coversion failed: " + e.toString());
             }
-            Log.v(LOG_TAG, "Rotation: " + rotate);
-            if (rotate != 0) {
-                // Getting width & height of the given image.
-                int w = bitmap.getWidth();
-                int h = bitmap.getHeight();
-                // Setting pre rotate
-                Matrix mtx = new Matrix();
-                mtx.preRotate(rotate);
-                // Rotating Bitmap
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
-                // tesseract req. ARGB_8888
-                bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-            }
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Rotate or coversion failed: " + e.toString());
-            callbackContext.error("Rotate or coversion failed: " + e.toString());
-        }
 
             TessBaseAPI baseApi = new TessBaseAPI();
-            baseApi.init("file:///android_asset/tessdata", "eng");
-
+            baseApi.setDebug(true);
+            baseApi.init(DATA_PATH, "eng");
+            baseApi.setImage(bitmap);
+            String recognizedText = baseApi.getUTF8Text();
+            Log.d(LOG_TAG, recognizedText);
+            baseApi.end();
+            callbackContext.success(recognizedText);
             return true;
         }
 
