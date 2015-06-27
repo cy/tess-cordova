@@ -40,8 +40,8 @@
 		<source-file src="src/android/TessCordova.java" target-dir="src/com/tesscordova"/>
     <source-file src="src/android/com/googlecode/tesseract/android" target-dir="src/com/googlecode/tesseract/android" />
     <source-file src="src/android/com/googlecode/leptonica/android" target-dir="src/com/googlecode/leptonica/android" />
-    <source-file src="src/android/tessdata" target-dir="assets/tessdata" />
-    <source-file src="src/android/receipt.jpg" target-dir="assets" />
+    <source-file src="src/android/tessdata" target-dir="assets/" />
+    <source-file src="src/android/receipt.jpg" target-dir="assets/" />
     <source-file src="src/android/jni" target-dir="libs/" />
     <source-file src="src/android/libs/mips" target-dir="libs/" />
     <source-file src="src/android/libs/armeabi-v7a" target-dir="libs/" />

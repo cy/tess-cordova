@@ -15,15 +15,22 @@ import android.graphics.Bitmap;
 import android.media.ExifInterface;
 import android.graphics.Matrix;
 import android.os.Environment;
+import android.content.res.AssetManager;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 public class TessCordova extends CordovaPlugin {
-    public static final String IMAGE_PATH = Environment.getExternalStorageDirectory().toString() + "/temp/receipt.jpg";
     static final String LOG_TAG = "com.tesscordova";
-    public static final String DATA_PATH = Environment.getExternalStorageDirectory().toString() + "/temp/";
+    public static final String LANG = "eng";
+
+    public String image_path;
+    public String data_path;
 
     public TessCordova() {
         super();
@@ -35,12 +42,15 @@ public class TessCordova extends CordovaPlugin {
             this.coolMethod(message, callbackContext);
             return true;
         } else if ("tessOCR".equals(action)) {
+             image_path = webView.getContext().getApplicationContext().getExternalFilesDir(null).toString() + "/TessCordova/receipt.jpg";
+             data_path = webView.getContext().getApplicationContext().getExternalFilesDir(null).toString() + "/TessCordova/";
+             copyTrainedData();
              BitmapFactory.Options options = new BitmapFactory.Options();
              options.inSampleSize = 2;
-             Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_PATH, options);
+             Bitmap bitmap = BitmapFactory.decodeFile(image_path, options);
 
             try {
-                ExifInterface exif = new ExifInterface(IMAGE_PATH);
+                ExifInterface exif = new ExifInterface(image_path);
                 int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                 Log.v(LOG_TAG, "Orient: " + exifOrientation);
                 int rotate = 0;
@@ -72,19 +82,67 @@ public class TessCordova extends CordovaPlugin {
                 Log.e(LOG_TAG, "Rotate or coversion failed: " + e.toString());
                 callbackContext.error("Rotate or coversion failed: " + e.toString());
             }
-
             TessBaseAPI baseApi = new TessBaseAPI();
             baseApi.setDebug(true);
-            baseApi.init(DATA_PATH, "eng");
+            baseApi.init(data_path, LANG, TessBaseAPI.OEM_TESSERACT_CUBE_COMBINED);
             baseApi.setImage(bitmap);
             String recognizedText = baseApi.getUTF8Text();
-            Log.d(LOG_TAG, recognizedText);
             baseApi.end();
             callbackContext.success(recognizedText);
             return true;
         }
 
         return false;
+    }
+
+    private void copyTrainedData() {
+        String[] paths = new String[] { data_path, data_path + "tessdata/" };
+        for (String path : paths) {
+            File dir = new File(path);
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    Log.v(LOG_TAG, "ERROR: Creation of directory " + path + " on sdcard failed");
+                    return;
+                } else {
+                    Log.v(LOG_TAG, "Created directory " + path + " on sdcard");
+                }
+            }
+
+        }
+        //if (!(new File(data_path + "tessdata/" + LANG + ".traineddata")).exists()) {
+        AssetManager assetManager = this.webView.getContext().getApplicationContext().getAssets();
+        try {
+            String[] assets = assetManager.list("tessdata");
+            for(int i = 0; i < assets.length; i++) {
+                if (!(new File(data_path + "tessdata/" + assets[i])).exists()) {
+                    copyFile(assetManager, "tessdata/" + assets[i], data_path + "tessdata/" + assets[i]);
+                }
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error:" + e.toString());
+        }
+        //also copy test image
+        copyFile(assetManager, "receipt.jpg", image_path);
+    }
+
+    private void copyFile(AssetManager assetManager, String assetPath, String destPath) {
+        try {
+            InputStream in = assetManager.open(assetPath);
+            OutputStream out = new FileOutputStream(destPath);
+
+            // Transfer bytes from in to out
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            in.close();
+            out.close();
+
+            Log.v(LOG_TAG, "unpacked file to: " + destPath);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Was unable to copy " + e.toString());
+        }
     }
 
     private void coolMethod(String message, CallbackContext callbackContext) {
@@ -96,3 +154,4 @@ public class TessCordova extends CordovaPlugin {
         }
     }
 }
+
