@@ -37,14 +37,14 @@ public class TessCordova extends CordovaPlugin {
     }
 
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if ("coolMethod".equals(action)) {
-            String message = args.getString(0);
-            this.coolMethod(message, callbackContext);
-            return true;
-        } else if ("tessOCR".equals(action)) {
+        if ("tessOCR".equals(action)) {
              image_path = webView.getContext().getApplicationContext().getExternalFilesDir(null).toString() + "/TessCordova/receipt.jpg";
              data_path = webView.getContext().getApplicationContext().getExternalFilesDir(null).toString() + "/TessCordova/";
+
              copyTrainedData();
+             //also copy test image
+             copyFile(this.webView.getContext().getApplicationContext().getAssets(), "receipt.jpg", image_path);
+
              BitmapFactory.Options options = new BitmapFactory.Options();
              options.inSampleSize = 2;
              Bitmap bitmap = BitmapFactory.decodeFile(image_path, options);
@@ -66,18 +66,18 @@ public class TessCordova extends CordovaPlugin {
                         break;
                 }
                 Log.v(LOG_TAG, "Rotation: " + rotate);
+                // Getting width & height of the given image.
+                int w = bitmap.getWidth();
+                int h = bitmap.getHeight();
                 if (rotate != 0) {
-                    // Getting width & height of the given image.
-                    int w = bitmap.getWidth();
-                    int h = bitmap.getHeight();
-                    // Setting pre rotate
                     Matrix mtx = new Matrix();
+                    // Setting pre rotate
                     mtx.preRotate(rotate);
-                    // Rotating Bitmap
+                    // Rotating Bitmap if needed
                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
-                    // tesseract req. ARGB_8888
-                    bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                 }
+                // tesseract req. ARGB_8888
+                bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Rotate or coversion failed: " + e.toString());
                 callbackContext.error("Rotate or coversion failed: " + e.toString());
@@ -101,15 +101,14 @@ public class TessCordova extends CordovaPlugin {
             File dir = new File(path);
             if (!dir.exists()) {
                 if (!dir.mkdirs()) {
-                    Log.v(LOG_TAG, "ERROR: Creation of directory " + path + " on sdcard failed");
+                    Log.v(LOG_TAG, "ERROR: Creation of directory " + path + "failed");
                     return;
                 } else {
-                    Log.v(LOG_TAG, "Created directory " + path + " on sdcard");
+                    Log.v(LOG_TAG, "Created directory " + path);
                 }
             }
 
         }
-        //if (!(new File(data_path + "tessdata/" + LANG + ".traineddata")).exists()) {
         AssetManager assetManager = this.webView.getContext().getApplicationContext().getAssets();
         try {
             String[] assets = assetManager.list("tessdata");
@@ -121,8 +120,6 @@ public class TessCordova extends CordovaPlugin {
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error:" + e.toString());
         }
-        //also copy test image
-        copyFile(assetManager, "receipt.jpg", image_path);
     }
 
     private void copyFile(AssetManager assetManager, String assetPath, String destPath) {
@@ -142,15 +139,6 @@ public class TessCordova extends CordovaPlugin {
             Log.v(LOG_TAG, "unpacked file to: " + destPath);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Was unable to copy " + e.toString());
-        }
-    }
-
-    private void coolMethod(String message, CallbackContext callbackContext) {
-        Log.d("tesscordova","hello from coolMethod");
-        if (message != null && message.length() > 0) {
-            callbackContext.success(message);
-        } else {
-            callbackContext.error("Expected one non-empty string argument.");
         }
     }
 }
