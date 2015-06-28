@@ -66,18 +66,20 @@ public class TessCordova extends CordovaPlugin {
                         break;
                 }
                 Log.v(LOG_TAG, "Rotation: " + rotate);
+                // Getting width & height of the given image.
+                int w = bitmap.getWidth();
+                int h = bitmap.getHeight();
+                Matrix mtx = new Matrix();
                 if (rotate != 0) {
-                    // Getting width & height of the given image.
-                    int w = bitmap.getWidth();
-                    int h = bitmap.getHeight();
                     // Setting pre rotate
-                    Matrix mtx = new Matrix();
                     mtx.preRotate(rotate);
-                    // Rotating Bitmap
+                    // Rotating Bitmap if needed
                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
-                    // tesseract req. ARGB_8888
-                    bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                 }
+                // scale up 10x
+                bitmap = Bitmap.createScaledBitmap(bitmap, w * 7, h * 7, false);
+                // tesseract req. ARGB_8888
+                bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Rotate or coversion failed: " + e.toString());
                 callbackContext.error("Rotate or coversion failed: " + e.toString());
@@ -101,15 +103,14 @@ public class TessCordova extends CordovaPlugin {
             File dir = new File(path);
             if (!dir.exists()) {
                 if (!dir.mkdirs()) {
-                    Log.v(LOG_TAG, "ERROR: Creation of directory " + path + " on sdcard failed");
+                    Log.v(LOG_TAG, "ERROR: Creation of directory " + path + "failed");
                     return;
                 } else {
-                    Log.v(LOG_TAG, "Created directory " + path + " on sdcard");
+                    Log.v(LOG_TAG, "Created directory " + path);
                 }
             }
 
         }
-        //if (!(new File(data_path + "tessdata/" + LANG + ".traineddata")).exists()) {
         AssetManager assetManager = this.webView.getContext().getApplicationContext().getAssets();
         try {
             String[] assets = assetManager.list("tessdata");
